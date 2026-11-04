@@ -1,0 +1,16 @@
+MASTER SERVICES AGREEMENT (MSA)
+
+Parties: Global Enterprise Corp ("Client") and Delta Consulting LLC ("Vendor").
+Effective Date: March 15, 2026
+
+1. SCOPE OF SERVICES
+Vendor shall provide specialized database tuning and vector store optimization services as detailed in Statement of Work (SOW) #1.
+
+2. COMPENSATION & FEES
+The total engagement fee shall not exceed $45,000 USD billed on a milestone delivery basis.
+
+3. PAYMENT TERMS
+Invoices shall be payable within 30 days of submission and client acceptance. In accordance with corporate policy, no advance payments shall exceed $10,000 USD.
+
+4. CONFIDENTIALITY & DATA SECURITY
+Vendor acknowledges that all client documents, data models, and vector embeddings are confidential proprietary information and shall not be retained or processed on unapproved third-party servers.

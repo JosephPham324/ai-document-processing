@@ -1,0 +1,142 @@
+[
+  {
+    "id": "q01",
+    "query": "What is the vendor name on the quotation?",
+    "target_field": "vendor_name",
+    "expected_keywords": ["vendor", "name", "quotation"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q02",
+    "query": "What is the total quotation amount and currency?",
+    "target_field": "amount",
+    "expected_keywords": ["amount", "total", "quote", "usd"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q03",
+    "query": "What are the payment terms specified in the quotation?",
+    "target_field": "payment_terms",
+    "expected_keywords": ["payment", "terms", "15", "days"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q04",
+    "query": "What is the standard payment terms duration in the procurement policy?",
+    "target_field": "payment_terms",
+    "expected_keywords": ["policy", "payment", "terms", "30", "days"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q05",
+    "query": "What is the approval threshold for executive signoff in the policy?",
+    "target_field": "approval_threshold",
+    "expected_keywords": ["approval", "threshold", "cfo", "policy"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q06",
+    "query": "Does the quote include delivery and shipping terms?",
+    "target_field": "delivery_terms",
+    "expected_keywords": ["delivery", "shipping", "quote"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q07",
+    "query": "What is the advance payment limit under the procurement policy?",
+    "target_field": "advance_payment_limit",
+    "expected_keywords": ["advance", "payment", "limit", "policy"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q08",
+    "query": "What are the compliance requirements for international vendors?",
+    "target_field": "compliance_requirements",
+    "expected_keywords": ["compliance", "international", "vendors"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q09",
+    "query": "Who is the primary contact person for the vendor quotation?",
+    "target_field": "contact_person",
+    "expected_keywords": ["contact", "person", "quotation"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q10",
+    "query": "What is the discount rate offered for early payment within 10 days?",
+    "target_field": "early_discount",
+    "expected_keywords": ["discount", "early", "payment"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q11",
+    "query": "What is the policy regarding sole-source procurement exemptions?",
+    "target_field": "sole_source_policy",
+    "expected_keywords": ["sole", "source", "procurement", "exemptions"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q12",
+    "query": "What are the penalties specified for late delivery of services?",
+    "target_field": "late_penalties",
+    "expected_keywords": ["penalties", "late", "delivery"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q13",
+    "query": "What currency are the contract prices quoted in?",
+    "target_field": "currency",
+    "expected_keywords": ["currency", "usd", "quoted"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q14",
+    "query": "What is the warranty period stated in the vendor proposal?",
+    "target_field": "warranty_period",
+    "expected_keywords": ["warranty", "period", "vendor"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q15",
+    "query": "What insurance coverage is required for on-site contractors?",
+    "target_field": "insurance_coverage",
+    "expected_keywords": ["insurance", "coverage", "contractors"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q16",
+    "query": "What are the dispute resolution procedures specified in the contract?",
+    "target_field": "dispute_resolution",
+    "expected_keywords": ["dispute", "resolution", "arbitration"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q17",
+    "query": "What is the validity period of the quotation?",
+    "target_field": "validity_period",
+    "expected_keywords": ["validity", "period", "quote", "days"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q18",
+    "query": "Compare the payment terms of the quote against the procurement policy.",
+    "target_field": "payment_terms",
+    "expected_keywords": ["compare", "payment", "terms", "policy"],
+    "expected_doc": "Vendor Quotation.pdf"
+  },
+  {
+    "id": "q19",
+    "query": "Validate whether the quotation amount requires CFO approval.",
+    "target_field": "amount",
+    "expected_keywords": ["validate", "amount", "cfo", "approval"],
+    "expected_doc": "Procurement Policy.pdf"
+  },
+  {
+    "id": "q20",
+    "query": "Calculate the net payment amount after a 10% discount on the quote.",
+    "target_field": "amount",
+    "expected_keywords": ["calculate", "discount", "quote"],
+    "expected_doc": "Vendor Quotation.pdf"
+  }
+]
