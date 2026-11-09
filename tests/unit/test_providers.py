@@ -64,3 +64,28 @@ async def test_gemini_llm_provider() -> None:
     with patch("httpx.AsyncClient.post", return_value=mock_resp):
         text = await provider.generate("Question", system_prompt="Be concise")
         assert "Gemini answer" in text
+
+
+def test_factory_dynamic_byok_providers() -> None:
+    """Verifies factory produces dynamic, request-scoped instances when client credentials are provided."""
+    from docproc.providers.factory import get_embedding_provider, get_llm_provider
+
+    # OpenAI BYOK
+    llm_openai = get_llm_provider(provider_name="openai", api_key="sk-client-key")
+    assert isinstance(llm_openai, OpenAILLMProvider)
+    assert llm_openai.api_key == "sk-client-key"
+
+    # Gemini BYOK
+    llm_gemini = get_llm_provider(provider_name="gemini", api_key="AIza-client-key")
+    assert isinstance(llm_gemini, GeminiLLMProvider)
+    assert llm_gemini.api_key == "AIza-client-key"
+
+    # Mock BYOK
+    llm_mock = get_llm_provider(provider_name="mock")
+    from docproc.providers.mock_provider import MockLLMProvider
+    assert isinstance(llm_mock, MockLLMProvider)
+
+    # Embedding BYOK
+    emb_openai = get_embedding_provider(provider_name="openai", api_key="sk-client-key")
+    assert isinstance(emb_openai, OpenAIEmbeddingProvider)
+    assert emb_openai.api_key == "sk-client-key"

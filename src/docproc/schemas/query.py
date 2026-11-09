@@ -33,6 +33,18 @@ class QueryRequest(BaseModel):
         le=1.0,
         description="Optional similarity cutoff threshold (0.0 to 1.0, defaults to server config).",
     )
+    llm_provider: Literal["mock", "openai", "gemini"] | None = Field(
+        None,
+        description="Optional client-selected LLM provider (BYOK mode).",
+    )
+    api_key: str | None = Field(
+        None,
+        description="Optional client-provided ephemeral API key (never stored).",
+    )
+    model: str | None = Field(
+        None,
+        description="Optional specific model override (e.g. gpt-4o-mini, gemini-1.5-flash).",
+    )
 
 
 class WorkflowTrace(BaseModel):

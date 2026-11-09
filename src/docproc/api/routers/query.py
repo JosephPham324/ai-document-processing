@@ -48,6 +48,23 @@ async def query_documents(
             if not res.scalar_one_or_none():
                 raise DocumentNotFoundException(doc_id_str)
 
+    # Extract client credentials from headers or request payload (headers take precedence)
+    client_provider = request.headers.get("X-LLM-Provider") or payload.llm_provider
+    client_api_key = (
+        request.headers.get("X-OpenAI-API-Key")
+        or request.headers.get("X-Gemini-API-Key")
+        or request.headers.get("X-API-Key")
+        or payload.api_key
+    )
+    client_model = request.headers.get("X-LLM-Model") or payload.model
+
+    # Auto-detect provider if key prefix is evident and provider wasn't explicitly supplied
+    if client_api_key and not client_provider:
+        if client_api_key.startswith("sk-"):
+            client_provider = "openai"
+        elif client_api_key.startswith("AIza"):
+            client_provider = "gemini"
+
     # Run orchestrated workflow
     response = await execute_query_workflow(
         query=payload.query,
@@ -56,5 +73,8 @@ async def query_documents(
         session=session,
         request_id=req_id,
         relevance_threshold=payload.relevance_threshold,
+        llm_provider=client_provider,
+        llm_api_key=client_api_key,
+        llm_model=client_model,
     )
     return response

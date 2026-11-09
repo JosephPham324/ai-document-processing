@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    CORS_ORIGINS: list[str] = ["*"]
 
     # Database
     DATABASE_URL: str = Field(

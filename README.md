@@ -115,6 +115,35 @@ Configured via environment variables in `.env`:
 | **Offline Mock (Default)** | `LLM_PROVIDER=mock`<br>`EMBEDDING_PROVIDER=mock` | Zero external API keys needed. Generates deterministic 1536-dim vector hashes for instant, free offline testing. |
 | **OpenAI** | `LLM_PROVIDER=openai`<br>`OPENAI_API_KEY=sk-...` | Live inference via `gpt-4o-mini` and `text-embedding-3-small`. |
 | **Google Gemini** | `LLM_PROVIDER=gemini`<br>`GEMINI_API_KEY=AIza...` | Live inference via `gemini-1.5-flash` and `text-embedding-004`. |
+| **Client BYOK (Browser-Managed)** | Set via UI modal or Request Headers | Users supply their own OpenAI or Gemini API key in the browser dashboard or via `X-OpenAI-API-Key` / `X-Gemini-API-Key` headers. Ephemeral per-request execution with **zero server persistence**. |
+
+---
+
+## AWS EC2 & Cloud Deployment
+
+### 1. Launching on AWS EC2 (Ubuntu 24.04 LTS)
+1. Launch a `t3.small` or `t3.micro` EC2 instance with an Ubuntu 24.04 AMI and a 20-30GB gp3 EBS disk.
+2. In your Security Group, allow inbound traffic on:
+   - **Port 22** (SSH)
+   - **Port 80** (HTTP)
+   - **Port 443** (HTTPS)
+   - **Port 8000** (API & Web Dashboard)
+3. SSH into the instance:
+   ```bash
+   ssh -i your-key.pem ubuntu@<EC2_PUBLIC_IP>
+   ```
+4. Run the setup script to configure Docker and swap space:
+   ```bash
+   git clone <YOUR_REPO_URL>
+   cd ai-document-processing
+   chmod +x scripts/setup_ec2.sh
+   ./scripts/setup_ec2.sh
+   ```
+5. Start the application:
+   ```bash
+   docker compose up -d --build
+   ```
+6. Open `http://<EC2_PUBLIC_IP>:8000` in your browser.
 
 ---
 

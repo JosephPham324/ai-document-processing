@@ -26,6 +26,11 @@ class WorkflowState(TypedDict, total=False):
     top_k: int
     relevance_threshold: float
 
+    # Client-provided credentials (BYOK)
+    llm_provider: str | None
+    llm_api_key: str | None
+    llm_model: str | None
+
     # Execution plan & evidence
     plan: TaskPlan
     retrieved_chunks: list[RetrievedChunk]

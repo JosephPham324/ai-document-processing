@@ -85,7 +85,15 @@ UI_HTML = r"""<!DOCTYPE html>
     </div>
 
     <!-- System Status & Links -->
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center space-x-3">
+      <!-- BYOK Settings Button -->
+      <button id="api-key-btn" class="flex items-center space-x-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 transition cursor-pointer">
+        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        <span id="api-key-badge" class="font-medium text-[11px]">Provider: <span class="text-emerald-400">Offline Mock</span></span>
+      </button>
+
+      <div class="h-4 w-px bg-slate-800"></div>
+
       <div id="status-indicator" class="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping" id="status-ping"></span>
         <span class="w-2 h-2 rounded-full bg-amber-400" id="status-dot"></span>
@@ -322,6 +330,76 @@ UI_HTML = r"""<!DOCTYPE html>
 
   </main>
 
+  <!-- API Key & Provider Settings Modal (BYOK) -->
+  <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Client API Key & Model Settings (BYOK)
+        </h3>
+        <button id="close-modal-btn" class="text-slate-400 hover:text-white p-1 rounded transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Security Notice -->
+      <div class="p-3 bg-emerald-950/30 border border-emerald-900/50 rounded-lg text-[11px] text-emerald-300 leading-relaxed flex items-start gap-2">
+        <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        <span><strong>Client-Side Only:</strong> Your API key is stored strictly on your device (in browser session) and sent via encrypted request headers. It is <em>never</em> persisted to the server, disk, or database.</span>
+      </div>
+
+      <!-- Provider Radio Options -->
+      <div class="space-y-2">
+        <label class="text-xs font-medium text-slate-300">Choose LLM Engine</label>
+        <div class="grid grid-cols-3 gap-2">
+          <label id="provider-card-mock" class="provider-card flex flex-col items-center justify-center p-2.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 cursor-pointer transition text-center">
+            <input type="radio" name="provider-choice" value="mock" class="hidden" checked>
+            <span class="text-xs font-semibold text-slate-200">Offline Mock</span>
+            <span class="text-[10px] text-slate-400">Zero Cost</span>
+          </label>
+          <label id="provider-card-openai" class="provider-card flex flex-col items-center justify-center p-2.5 rounded-lg border border-slate-800 bg-slate-950/50 hover:border-slate-700 cursor-pointer transition text-center">
+            <input type="radio" name="provider-choice" value="openai" class="hidden">
+            <span class="text-xs font-semibold text-slate-200">OpenAI</span>
+            <span class="text-[10px] text-slate-400">GPT-4o-mini</span>
+          </label>
+          <label id="provider-card-gemini" class="provider-card flex flex-col items-center justify-center p-2.5 rounded-lg border border-slate-800 bg-slate-950/50 hover:border-slate-700 cursor-pointer transition text-center">
+            <input type="radio" name="provider-choice" value="gemini" class="hidden">
+            <span class="text-xs font-semibold text-slate-200">Gemini</span>
+            <span class="text-[10px] text-slate-400">1.5 Flash</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Key Input (Hidden in Mock mode) -->
+      <div id="key-input-container" class="hidden space-y-2">
+        <label class="text-xs font-medium text-slate-300" id="key-label">API Key</label>
+        <div class="relative">
+          <input type="password" id="modal-api-key" placeholder="sk-..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 pr-10 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono">
+          <button type="button" id="toggle-key-visibility" class="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-300 cursor-pointer">
+            <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <input type="checkbox" id="remember-key-checkbox" class="rounded bg-slate-950 border-slate-700 text-emerald-600">
+            <span>Remember in browser across sessions</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+        <button id="clear-key-btn" class="text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded bg-red-950/20 hover:bg-red-950/40 border border-red-900/40 transition cursor-pointer">
+          Clear / Forget Key
+        </button>
+        <button id="save-settings-btn" class="text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-1.5 rounded-lg shadow-sm transition cursor-pointer">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Client-side Logic -->
   <script>
     let activeDocuments = [];
@@ -370,6 +448,135 @@ UI_HTML = r"""<!DOCTYPE html>
     const workflowTools = document.getElementById('workflow-tools');
     const rawJson = document.getElementById('raw-json');
     const copyJsonBtn = document.getElementById('copy-json-btn');
+
+    // BYOK Client-Side Key Management Elements
+    const apiKeyBtn = document.getElementById('api-key-btn');
+    const apiKeyBadge = document.getElementById('api-key-badge');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const keyInputContainer = document.getElementById('key-input-container');
+    const modalApiKey = document.getElementById('modal-api-key');
+    const toggleKeyVisibility = document.getElementById('toggle-key-visibility');
+    const rememberKeyCheckbox = document.getElementById('remember-key-checkbox');
+    const saveSettingsBtn = document.getElementById('save-settings-btn');
+    const clearKeyBtn = document.getElementById('clear-key-btn');
+
+    function getStoredCredentials() {
+      const provider = localStorage.getItem('byok_provider') || sessionStorage.getItem('byok_provider') || 'mock';
+      const key = localStorage.getItem('byok_api_key') || sessionStorage.getItem('byok_api_key') || '';
+      const isRemembered = !!localStorage.getItem('byok_provider');
+      return { provider, key, isRemembered };
+    }
+
+    function setStoredCredentials(provider, key, remember) {
+      if (remember) {
+        localStorage.setItem('byok_provider', provider);
+        if (key) localStorage.setItem('byok_api_key', key);
+        else localStorage.removeItem('byok_api_key');
+        sessionStorage.removeItem('byok_provider');
+        sessionStorage.removeItem('byok_api_key');
+      } else {
+        sessionStorage.setItem('byok_provider', provider);
+        if (key) sessionStorage.setItem('byok_api_key', key);
+        else sessionStorage.removeItem('byok_api_key');
+        localStorage.removeItem('byok_provider');
+        localStorage.removeItem('byok_api_key');
+      }
+      updateApiKeyBadge();
+    }
+
+    function clearStoredCredentials() {
+      localStorage.removeItem('byok_provider');
+      localStorage.removeItem('byok_api_key');
+      sessionStorage.removeItem('byok_provider');
+      sessionStorage.removeItem('byok_api_key');
+      updateApiKeyBadge();
+    }
+
+    function updateApiKeyBadge() {
+      const creds = getStoredCredentials();
+      if (creds.provider === 'openai' && creds.key) {
+        apiKeyBadge.innerHTML = 'Provider: <span class="text-emerald-400 font-semibold">OpenAI (Client Key)</span>';
+      } else if (creds.provider === 'gemini' && creds.key) {
+        apiKeyBadge.innerHTML = 'Provider: <span class="text-blue-400 font-semibold">Gemini (Client Key)</span>';
+      } else {
+        apiKeyBadge.innerHTML = 'Provider: <span class="text-slate-400">Offline Mock</span>';
+      }
+    }
+
+    function syncModalUI() {
+      const creds = getStoredCredentials();
+      const radio = document.querySelector(`input[name="provider-choice"][value="${creds.provider}"]`);
+      if (radio) radio.checked = true;
+      modalApiKey.value = creds.key;
+      rememberKeyCheckbox.checked = creds.isRemembered;
+      updateProviderCards(creds.provider);
+    }
+
+    function updateProviderCards(selected) {
+      ['mock', 'openai', 'gemini'].forEach(p => {
+        const card = document.getElementById(`provider-card-${p}`);
+        if (!card) return;
+        if (p === selected) {
+          card.className = 'provider-card flex flex-col items-center justify-center p-2.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 cursor-pointer transition text-center';
+        } else {
+          card.className = 'provider-card flex flex-col items-center justify-center p-2.5 rounded-lg border border-slate-800 bg-slate-950/50 hover:border-slate-700 cursor-pointer transition text-center';
+        }
+      });
+
+      if (selected === 'mock') {
+        keyInputContainer.classList.add('hidden');
+      } else {
+        keyInputContainer.classList.remove('hidden');
+        modalApiKey.placeholder = selected === 'openai' ? 'sk-...' : 'AIza...';
+      }
+    }
+
+    document.querySelectorAll('input[name="provider-choice"]').forEach(r => {
+      r.addEventListener('change', (e) => {
+        updateProviderCards(e.target.value);
+      });
+    });
+
+    apiKeyBtn.addEventListener('click', () => {
+      syncModalUI();
+      settingsModal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      settingsModal.classList.add('hidden');
+    });
+
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) {
+        settingsModal.classList.add('hidden');
+      }
+    });
+
+    toggleKeyVisibility.addEventListener('click', () => {
+      modalApiKey.type = modalApiKey.type === 'password' ? 'text' : 'password';
+    });
+
+    saveSettingsBtn.addEventListener('click', () => {
+      const checkedRadio = document.querySelector('input[name="provider-choice"]:checked');
+      const provider = checkedRadio ? checkedRadio.value : 'mock';
+      const key = modalApiKey.value.trim();
+      const remember = rememberKeyCheckbox.checked;
+
+      if (provider !== 'mock' && !key) {
+        alert('Please enter your ' + (provider === 'openai' ? 'OpenAI' : 'Google Gemini') + ' API key, or choose Offline Mock.');
+        return;
+      }
+
+      setStoredCredentials(provider, key, remember);
+      settingsModal.classList.add('hidden');
+    });
+
+    clearKeyBtn.addEventListener('click', () => {
+      clearStoredCredentials();
+      syncModalUI();
+      settingsModal.classList.add('hidden');
+    });
 
     // 1. Health & Readiness Check
     async function checkHealth() {
@@ -553,9 +760,17 @@ UI_HTML = r"""<!DOCTYPE html>
       uploadBtnText.textContent = 'Processing...';
       uploadMessage.classList.add('hidden');
 
+      const creds = getStoredCredentials();
+      const uploadHeaders = {};
+      if (creds.key && creds.provider === 'openai') {
+        uploadHeaders['X-OpenAI-API-Key'] = creds.key;
+        uploadHeaders['X-Embedding-Provider'] = 'openai';
+      }
+
       try {
         const res = await fetch('/documents', {
           method: 'POST',
+          headers: uploadHeaders,
           body: formData
         });
 
@@ -619,6 +834,20 @@ UI_HTML = r"""<!DOCTYPE html>
         payload.document_ids = Array.from(selectedDocIds);
       }
 
+      // Read client-side credentials (BYOK)
+      const creds = getStoredCredentials();
+      const queryHeaders = { 'Content-Type': 'application/json' };
+      if (creds.key && creds.provider !== 'mock') {
+        if (creds.provider === 'openai') {
+          queryHeaders['X-OpenAI-API-Key'] = creds.key;
+        } else if (creds.provider === 'gemini') {
+          queryHeaders['X-Gemini-API-Key'] = creds.key;
+        }
+        queryHeaders['X-LLM-Provider'] = creds.provider;
+        payload.llm_provider = creds.provider;
+        payload.api_key = creds.key;
+      }
+
       runQueryBtn.disabled = true;
       querySpinner.classList.remove('hidden');
       queryBtnText.textContent = 'Analyzing...';
@@ -626,7 +855,7 @@ UI_HTML = r"""<!DOCTYPE html>
       try {
         const res = await fetch('/query', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: queryHeaders,
           body: JSON.stringify(payload)
         });
 
@@ -823,6 +1052,7 @@ UI_HTML = r"""<!DOCTYPE html>
     });
 
     // Initial Load
+    updateApiKeyBadge();
     checkHealth();
     loadDocuments();
     setInterval(checkHealth, 15000);
