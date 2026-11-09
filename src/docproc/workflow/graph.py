@@ -74,6 +74,9 @@ async def execute_query_workflow(
     session: AsyncSession,
     request_id: str,
     relevance_threshold: float | None = None,
+    llm_provider: str | None = None,
+    llm_api_key: str | None = None,
+    llm_model: str | None = None,
 ) -> QueryResponse:
     """Executes end-to-end document processing workflow and returns validated QueryResponse."""
     settings = get_settings()
@@ -88,6 +91,9 @@ async def execute_query_workflow(
         "document_ids": document_ids,
         "top_k": top_k,
         "relevance_threshold": effective_thresh,
+        "llm_provider": llm_provider,
+        "llm_api_key": llm_api_key,
+        "llm_model": llm_model,
         "retrieved_chunks": [],
         "has_sufficient_evidence": False,
         "extracted_data": {},

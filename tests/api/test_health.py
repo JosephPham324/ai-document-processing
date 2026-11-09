@@ -39,3 +39,17 @@ async def test_ready_check_when_database_is_unavailable(async_client: AsyncClien
         data = response.json()
         assert data["status"] == "not_ready"
         assert data["dependencies"]["database"] == "unavailable"
+
+
+@pytest.mark.asyncio
+async def test_cors_headers_present(async_client: AsyncClient) -> None:
+    """Verifies that CORS middleware attaches appropriate headers."""
+    response = await async_client.options(
+        "/health",
+        headers={
+            "Origin": "http://example.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    # When allow_credentials=True, Starlette CORS middleware reflects the request origin
+    assert response.headers.get("access-control-allow-origin") == "http://example.com"

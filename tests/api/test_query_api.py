@@ -161,3 +161,30 @@ async def test_query_validation_errors(async_client: AsyncClient) -> None:
     res_long = await async_client.post("/query", json={"query": "A" * 4001})
     assert res_long.status_code == 422
     assert res_long.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+@pytest.mark.asyncio
+async def test_byok_query_with_headers_and_body(async_client: AsyncClient) -> None:
+    """Verifies that client-provided API key and provider are processed properly."""
+    # 1. Query with BYOK headers
+    headers = {
+        "X-LLM-Provider": "mock",
+        "X-API-Key": "test-client-key-header",
+    }
+    res = await async_client.post(
+        "/query",
+        headers=headers,
+        json={"query": "What is in the document?"},
+    )
+    assert res.status_code == 200
+    assert "summary" in res.json()
+
+    # 2. Query with BYOK payload
+    payload = {
+        "query": "What is in the document?",
+        "llm_provider": "mock",
+        "api_key": "test-client-key-body",
+    }
+    res2 = await async_client.post("/query", json=payload)
+    assert res2.status_code == 200
+    assert "summary" in res2.json()

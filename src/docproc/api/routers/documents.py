@@ -3,7 +3,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, File, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Query, Request, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,16 +26,28 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
     description="Accepts PDF, TXT, or Markdown documents (up to 20MB), parses text, generates embeddings, and stores chunks.",
 )
 async def upload_document(
+    request: Request,
     file: UploadFile = File(...),
     session: AsyncSession = Depends(get_db),
 ) -> DocumentResponse:
     filename = file.filename or "unknown_file"
     content_type = file.content_type or "application/octet-stream"
 
+    client_emb_prov = request.headers.get("X-Embedding-Provider")
+    client_emb_key = (
+        request.headers.get("X-OpenAI-API-Key")
+        or request.headers.get("X-Gemini-API-Key")
+        or request.headers.get("X-API-Key")
+    )
+
     # Read bytes
     file_bytes = await file.read()
 
-    ingestion_service = IngestionService(session)
+    ingestion_service = IngestionService(
+        session,
+        embedding_provider=client_emb_prov,
+        embedding_api_key=client_emb_key,
+    )
     response = await ingestion_service.ingest_document(
         file_bytes=file_bytes,
         filename=filename,

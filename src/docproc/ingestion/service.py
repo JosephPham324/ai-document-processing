@@ -29,10 +29,19 @@ def compute_sha256(data: bytes) -> str:
 class IngestionService:
     """Handles end-to-end ingestion lifecycle for uploaded documents."""
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: AsyncSession,
+        embedding_provider: str | None = None,
+        embedding_api_key: str | None = None,
+    ) -> None:
         self.session = session
         self.settings = get_settings()
-        self.embedder = get_embedding_provider(self.settings)
+        self.embedder = get_embedding_provider(
+            self.settings,
+            provider_name=embedding_provider,
+            api_key=embedding_api_key,
+        )
 
     async def ingest_document(
         self,

@@ -147,7 +147,16 @@ async def retrieve_evidence(state: WorkflowState, session: AsyncSession) -> dict
     is_overview = is_document_overview_query(query)
     effective_threshold = min(threshold, 0.20) if is_overview else threshold
 
-    embedder = get_embedding_provider(settings)
+    req_provider = state.get("llm_provider")
+    req_key = state.get("llm_api_key")
+    # Only use client key for embeddings if OpenAI (1536 dimensions match schema)
+    client_emb_prov = req_provider if req_provider == "openai" else None
+    client_emb_key = req_key if req_provider == "openai" else None
+    embedder = get_embedding_provider(
+        settings,
+        provider_name=client_emb_prov,
+        api_key=client_emb_key,
+    )
     query_vector = await embedder.embed_query(query)
 
     retrieval_res = await search_similar_chunks(
@@ -433,12 +442,22 @@ async def synthesize_response(state: WorkflowState) -> dict[str, Any]:
     settings = get_settings()
     summary_text = ""
 
-    # When live LLM is configured (OpenAI / Gemini), synthesize an intelligent grounded response
-    should_call_llm = settings.LLM_PROVIDER != "mock" and bool(chunks)
+    # Support client-provided API key (BYOK) or server-configured provider
+    req_provider = state.get("llm_provider")
+    req_key = state.get("llm_api_key")
+    req_model = state.get("llm_model")
+
+    effective_provider = (req_provider or settings.LLM_PROVIDER).lower()
+    should_call_llm = (effective_provider != "mock" or bool(req_key)) and bool(chunks)
 
     if should_call_llm:
         try:
-            llm = get_llm_provider(settings)
+            llm = get_llm_provider(
+                settings=settings,
+                provider_name=effective_provider,
+                api_key=req_key,
+                model=req_model,
+            )
             evidence_text = "\n\n".join(
                 f"[{c.source_id}] (Document: {c.document_name}, Page: {c.page})\n{c.excerpt}"
                 for c in chunks[:8]
@@ -472,8 +491,11 @@ async def synthesize_response(state: WorkflowState) -> dict[str, Any]:
             if generated and generated.strip():
                 summary_text = generated.strip()
         except Exception as exc:
+            clean_exc = str(exc)
+            if req_key:
+                clean_exc = clean_exc.replace(req_key, "[REDACTED_API_KEY]")
             logger.warning(
-                f"LLM response synthesis failed, falling back to deterministic summary: {exc}"
+                f"LLM response synthesis failed, falling back to deterministic summary: {clean_exc}"
             )
             summary_text = ""
 

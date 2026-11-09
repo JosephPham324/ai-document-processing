@@ -14,13 +14,44 @@ _embedding_instance: EmbeddingProvider | None = None
 _llm_instance: LLMProvider | None = None
 
 
-def get_embedding_provider(settings: Settings | None = None) -> EmbeddingProvider:
-    """Returns singleton configured embedding provider (OpenAI, Gemini, or Mock)."""
-    global _embedding_instance
-    if _embedding_instance is None:
-        cfg = settings or get_settings()
-        prov = cfg.EMBEDDING_PROVIDER.lower()
+def reset_provider_singletons() -> None:
+    """Resets cached provider singletons (useful in testing)."""
+    global _embedding_instance, _llm_instance
+    _embedding_instance = None
+    _llm_instance = None
 
+
+def get_embedding_provider(
+    settings: Settings | None = None,
+    provider_name: str | None = None,
+    api_key: str | None = None,
+) -> EmbeddingProvider:
+    """Returns configured embedding provider (OpenAI, Gemini, or Mock).
+
+    Supports client-provided per-request API keys (BYOK) when api_key is supplied,
+    falling back to cached server singletons otherwise.
+    """
+    global _embedding_instance
+    cfg = settings or get_settings()
+
+    # If client passed an ephemeral API key, instantiate dynamically without mutating singleton
+    if api_key or (provider_name and provider_name != cfg.EMBEDDING_PROVIDER):
+        prov = (provider_name or cfg.EMBEDDING_PROVIDER).lower()
+        if prov == "openai" and api_key:
+            return OpenAIEmbeddingProvider(
+                api_key=api_key,
+                dimension=cfg.EMBEDDING_DIMENSION,
+            )
+        elif prov == "gemini" and api_key:
+            return GeminiEmbeddingProvider(
+                api_key=api_key,
+                dimension=cfg.EMBEDDING_DIMENSION,
+            )
+        elif prov == "mock":
+            return MockEmbeddingProvider(dimension=cfg.EMBEDDING_DIMENSION)
+
+    if _embedding_instance is None:
+        prov = cfg.EMBEDDING_PROVIDER.lower()
         if prov == "openai" and cfg.OPENAI_API_KEY:
             logger.info("Initializing live OpenAI embedding provider")
             _embedding_instance = OpenAIEmbeddingProvider(
@@ -40,13 +71,38 @@ def get_embedding_provider(settings: Settings | None = None) -> EmbeddingProvide
     return _embedding_instance
 
 
-def get_llm_provider(settings: Settings | None = None) -> LLMProvider:
-    """Returns singleton configured LLM provider (OpenAI, Gemini, or Mock)."""
-    global _llm_instance
-    if _llm_instance is None:
-        cfg = settings or get_settings()
-        prov = cfg.LLM_PROVIDER.lower()
+def get_llm_provider(
+    settings: Settings | None = None,
+    provider_name: str | None = None,
+    api_key: str | None = None,
+    model: str | None = None,
+) -> LLMProvider:
+    """Returns configured LLM provider (OpenAI, Gemini, or Mock).
 
+    Supports client-provided per-request API keys (BYOK) when api_key is supplied,
+    falling back to cached server singletons otherwise.
+    """
+    global _llm_instance
+    cfg = settings or get_settings()
+
+    # If client passed an ephemeral API key, instantiate dynamically without mutating singleton
+    if api_key or (provider_name and provider_name != cfg.LLM_PROVIDER):
+        prov = (provider_name or cfg.LLM_PROVIDER).lower()
+        if prov == "openai" and api_key:
+            return OpenAILLMProvider(
+                api_key=api_key,
+                model=model or cfg.OPENAI_MODEL,
+            )
+        elif prov == "gemini" and api_key:
+            return GeminiLLMProvider(
+                api_key=api_key,
+                model=model or cfg.GEMINI_MODEL,
+            )
+        elif prov == "mock":
+            return MockLLMProvider()
+
+    if _llm_instance is None:
+        prov = cfg.LLM_PROVIDER.lower()
         if prov == "openai" and cfg.OPENAI_API_KEY:
             logger.info("Initializing live OpenAI LLM provider")
             _llm_instance = OpenAILLMProvider(

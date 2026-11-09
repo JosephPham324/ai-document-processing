@@ -1,0 +1,74 @@
+name: CD - Deploy to AWS EC2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check EC2 Secrets Configured
+        id: check-secrets
+        run: |
+          if [ -z "${{ secrets.EC2_HOST }}" ] || [ -z "${{ secrets.EC2_SSH_KEY }}" ]; then
+            echo "::warning ::EC2 secrets (EC2_HOST, EC2_SSH_KEY) are not configured yet. Skipping automated deployment."
+            echo "configured=false" >> $GITHUB_OUTPUT
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to EC2 via SSH
+        if: steps.check-secrets.outputs.configured == 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER || 'ubuntu' }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script: |
+            set -e
+            echo "=========================================================="
+            echo "🚀 Deploying AI Document Processing Agent to EC2"
+            echo "=========================================================="
+
+            APP_DIR="$HOME/ai-document-processing"
+
+            # 1. Clone repository if not present, otherwise pull latest main
+            if [ ! -d "$APP_DIR" ]; then
+              echo "📂 Repository not found on host. Cloning..."
+              git clone https://github.com/${{ github.repository }}.git "$APP_DIR"
+              cd "$APP_DIR"
+              chmod +x scripts/setup_ec2.sh
+              ./scripts/setup_ec2.sh
+            else
+              cd "$APP_DIR"
+              echo "📥 Pulling latest release from main..."
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+
+            # 2. Build and restart containers
+            echo "🐳 Building and starting Docker services..."
+            docker compose up -d --build
+
+            # 3. Health verification
+            echo "🩺 Verifying application health..."
+            for i in {1..10}; do
+              if curl -s -f http://localhost:8000/health > /dev/null; then
+                echo "✓ Application is healthy and responsive!"
+                break
+              fi
+              echo "Waiting for app to start ($i/10)..."
+              sleep 3
+            done
+
+            # 4. Cleanup old dangling images to preserve EBS disk space
+            echo "🧹 Cleaning up dangling Docker images..."
+            docker image prune -f
+
+            echo "=========================================================="
+            echo "✅ Deployment Successful!"
+            echo "=========================================================="
