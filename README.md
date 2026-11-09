@@ -147,6 +147,25 @@ Configured via environment variables in `.env`:
 
 ---
 
+## CI/CD Pipeline (GitHub Actions)
+
+This repository includes automated CI/CD workflows:
+
+* **Continuous Integration (`.github/workflows/ci.yml`)**:
+  * Triggers on every pull request and push to `main`, `develop`, and `feature/*`.
+  * Runs **Ruff** linting, **Pytest** with coverage tracking, and verifies **Docker build**.
+* **Continuous Deployment (`.github/workflows/deploy.yml`)**:
+  * Triggers on push/merge to `main` (or manual trigger in the GitHub Actions UI).
+  * Automatically connects via SSH to your EC2 instance, pulls the latest code, executes container rebuilds, and verifies health status.
+
+### Configuring EC2 Secrets in GitHub
+To enable automated deployment on push to `main`, go to your repository **Settings > Secrets and variables > Actions** and add:
+* `EC2_HOST`: The public IPv4 address or DNS of your EC2 instance.
+* `EC2_USER`: `ubuntu`
+* `EC2_SSH_KEY`: The entire contents of your private key (`.pem` file).
+
+---
+
 ## Testing & Quality Gates
 
 ```bash
