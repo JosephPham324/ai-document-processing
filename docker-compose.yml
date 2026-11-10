@@ -1,27 +1,26 @@
 services:
-  db:
-    image: pgvector/pgvector:pg16
-    container_name: docproc-db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: docproc
-    ports:
-      - "5433:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d docproc"]
-      interval: 3s
-      timeout: 3s
-      retries: 5
+  caddy:
+    image: caddy:2-alpine
+    container_name: docproc-caddy
     restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: docproc-api
+    restart: unless-stopped
     environment:
       ENVIRONMENT: production
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/docproc
@@ -30,12 +29,29 @@ services:
       LOG_LEVEL: INFO
       LLM_PROVIDER: mock
       EMBEDDING_PROVIDER: mock
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       db:
         condition: service_healthy
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: docproc-db
     restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: docproc
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d docproc"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
 
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:
