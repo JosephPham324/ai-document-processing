@@ -54,14 +54,14 @@ jobs:
             echo "🐳 Building and starting Docker services..."
             docker compose up -d --build
 
-            # 3. Health verification
+            # 3. Health verification (internal container health check)
             echo "🩺 Verifying application health..."
-            for i in {1..10}; do
-              if curl -s -f http://localhost:8000/health > /dev/null; then
+            for i in {1..12}; do
+              if docker compose exec -T app python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" 2>/dev/null; then
                 echo "✓ Application is healthy and responsive!"
                 break
               fi
-              echo "Waiting for app to start ($i/10)..."
+              echo "Waiting for app to start ($i/12)..."
               sleep 3
             done
 

@@ -45,7 +45,6 @@ echo "🛡️ Configuring host firewall..."
 sudo ufw allow 22/tcp || true
 sudo ufw allow 80/tcp || true
 sudo ufw allow 443/tcp || true
-sudo ufw allow 8000/tcp || true
 sudo ufw --force enable || true
 
 echo "=========================================================="
@@ -53,10 +52,15 @@ echo "✅ EC2 Setup Complete!"
 echo "=========================================================="
 echo ""
 echo "Next steps to run the application:"
-echo "1. Log out and back in (or run 'newgrp docker') so docker permissions apply without sudo."
-echo "2. Build and launch services:"
+echo "1. Activate docker group permissions in current session:"
+echo "   newgrp docker"
+echo ""
+echo "2. Configure your Cloudflare domain in .env:"
+echo "   echo 'DOMAIN=docproc.yourdomain.com' >> .env"
+echo ""
+echo "3. Build and launch services with automatic HTTPS:"
 echo "   docker compose up -d --build"
 echo ""
-echo "3. Access your dashboard at:"
-echo "   http://<YOUR_EC2_PUBLIC_IP>:8000"
+echo "4. Access your dashboard at:"
+echo "   https://<YOUR_DOMAIN>"
 echo "=========================================================="
